@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { getStorage, ref, uploadBytesResumable } from "firebase/storage";
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import { useRef } from "react";
+import { app } from "../firebase";
 
 const Profile = () => {
   const fileRef = useRef(null);
   const { currentUser } = useSelector((state) => state.user);
   const [ file, setFile ] = useState(undefined);
+  const [ filePercentage, setFilePercentage ] = useState(0);
+  const [ fileUploadError, setFileUploadError ] = useState(false);
+  const [ formData, setFormData ] = useState({});
+
+  console.log(filePercentage)
+  console.log(fileUploadError)
+  console.log(formData);
   
   useEffect(() => {
     if (file) {
@@ -21,10 +29,22 @@ const Profile = () => {
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     uploadTask.on('state_changed',
-    (snapshat) => {
-      const progress = (snapshot.bytesTransferred / snapshot)
+    (snapshot) => {
+      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      setFilePercentage(progress.toFixed(2));
+    },
+    (error) => {
+      setFileUploadError(true);
+    }, 
+    () => {
+      getDownloadURL(uploadTask.snapshot.ref).then
+      ((downloadURL) => 
+        setFormData({...formData, avatar: downloadURL})
+      );
+      
     })
   };
+
 
   const handleChange = (e) => {};
   // firebase storage
@@ -37,7 +57,7 @@ const Profile = () => {
     <div className="max-w-lg mx-auto text-center">
       <h1 className="text-3xl font-bold m-10">Profile</h1>
       <form className="flex flex-col">
-        <input type="file" ref={fileRef} hidden accept="image/*" onChange={(e) => {setFile(e.target.files[0])}}/>
+        <input type="file" ref={fileRef} hidden accept="image/*" onChange={(e) => setFile(e.target.files[0])}/>
         <img
           onClick={() => fileRef.current.click()}
           className="h-[100px] w-[100px] rounded-full mx-auto mb-10"
