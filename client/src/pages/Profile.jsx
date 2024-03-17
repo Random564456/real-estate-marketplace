@@ -8,7 +8,7 @@ import {
 } from "firebase/storage";
 import { useRef } from "react";
 import { app } from "../firebase";
-import { updateUserSuccess, updateUserFailure, updateUserStart } from "../redux/user/userSlice";
+import { updateUserSuccess, updateUserFailure, updateUserStart, deleteUserStart, deleteUserSuccess, deleteUserFailure } from "../redux/user/userSlice";
 
 const Profile = () => {
   const fileRef = useRef(null);
@@ -75,10 +75,32 @@ const Profile = () => {
         return;
       }
 
-      dispatch(updateUserSuccess(data))
+      dispatch(updateUserSuccess())
       setUpdateSuccess(true);
     } catch (error) {
       dispatch(updateUserFailure(error.message));
+    }
+  };
+
+  const handleClick = async (e) => {
+    if (e.target.id === "delete") {
+      dispatch(deleteUserStart);
+
+      try {
+        const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+          method: "DELETE",
+        });
+
+        const data = res.json();
+        if (data.success === false) {
+          dispatch(deleteUserFailure(data.message));
+          return;
+        }
+
+        dispatch(deleteUserSuccess());
+      } catch (error) {
+        dispatch(deleteUserFailure(error.message));
+      }
     }
   };
 
@@ -138,7 +160,7 @@ const Profile = () => {
       </form>
       <div className="flex justify-between">
         <button className="text-red-700 font-semibold text-md">Sign Out</button>
-        <button className="text-red-700 font-semibold text-md">
+        <button type="button" id="delete" onClick={handleClick} className="text-red-700 font-semibold text-md">
           Delete Account
         </button>
       </div>

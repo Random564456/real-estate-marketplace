@@ -1,7 +1,7 @@
 import { GoogleAuthProvider, signInWithPopup, getAuth } from 'firebase/auth';
 import { app } from '../firebase';
 import { useDispatch } from 'react-redux';
-import { signInSuccess } from '../redux/user/userSlice';
+import { signInFailure, signInSuccess } from '../redux/user/userSlice';
 import { useNavigate } from 'react-router-dom';
 
 const Oauth = () => {
@@ -26,6 +26,11 @@ const Oauth = () => {
 
 
             const data = await res.json();
+
+            if (data.success === false) {
+                dispatch(signInFailure(data.message));
+                return;
+            }
 
             dispatch(signInSuccess(data));
             navigate('/home')
