@@ -75,7 +75,7 @@ const Profile = () => {
         return;
       }
 
-      dispatch(updateUserSuccess())
+      dispatch(updateUserSuccess(data))
       setUpdateSuccess(true);
     } catch (error) {
       dispatch(updateUserFailure(error.message));
@@ -154,7 +154,7 @@ const Profile = () => {
           onChange={handleChange}
           className="p-2 mb-3 rounded-lg"
         />
-        <button disabled={loading} className="uppercase bg-slate-700 text-white p-3 rounded-lg hover:opacity-95 disabled: opacity-80 mb-3">
+        <button disabled={loading} type="submit" className="uppercase bg-slate-700 text-white p-3 rounded-lg hover:opacity-95 disabled: opacity-80 mb-3">
           {loading ? "Loading" : "Update"}
         </button>
       </form>
